@@ -1,6 +1,7 @@
 "use strict";
 require("dotenv").config();
 const express = require("express");
+
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -10,6 +11,20 @@ const fccTestingRoutes = require("./routes/fcctesting.js");
 const runner = require("./test-runner");
 
 const app = express();
+
+app.use((req, res, next) => {
+  if (!res._headers) {
+    res._headers = {};
+  }
+
+  const originalSetHeader = res.setHeader.bind(res);
+  res.setHeader = (name, value) => {
+    res._headers[String(name).toLowerCase()] = value;
+    return originalSetHeader(name, value);
+  };
+
+  next();
+});
 
 app.use("/public", express.static(process.cwd() + "/public"));
 
